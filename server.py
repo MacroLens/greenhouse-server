@@ -19,10 +19,7 @@ def get_current():
         date = rounder(datetime.datetime.now())
         stmt = f'''SELECT * FROM greenhouse WHERE date = '{date}';''' 
         data = cur.execute(stmt)
-        ret = []
-        for row in data:
-            ret.append(row)
-        return jsonify(ret)
+        return jsonify(data.fetchall())
 
 @app.route('/between', methods=['POST'])
 def get_between():
@@ -31,5 +28,23 @@ def get_between():
     
     start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
     end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+
+    dts = [dt.strftime('%Y-%m-%d %H:%M:%S') for dt in
+       datetime_range(start, end, datetime.timedelta(minutes=1))]
     
-    return "Hello!"
+    print(dts)
+    
+    with sqlite3.connect("data.db") as con:
+        cur = con.cursor()
+        ret = []
+        for dt in dts:
+            stmt = f'''SELECT * FROM greenhouse WHERE date = '{dt}';'''
+            cur.execute(stmt)
+            ret.append(cur.fetchall())
+        return jsonify(ret)
+
+def datetime_range(start, end, delta):
+    current = start
+    while current < end:
+        yield current
+        current += delta

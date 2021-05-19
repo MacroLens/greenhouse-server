@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 import sqlite3, datetime
+import pdb
 
 
 
@@ -17,9 +18,13 @@ def get_current():
     with sqlite3.connect("data.db") as con:
         cur = con.cursor()
         date = rounder(datetime.datetime.now())
+        date = date.replace(minute=date.minute - 1)
         stmt = f'''SELECT * FROM greenhouse WHERE date = '{date}';''' 
-        data = cur.execute(stmt)
-        return jsonify(data.fetchall())
+        cur.execute(stmt)
+        data = cur.fetchall()
+
+        ret = {data[0][0] : { 'temperature': float(data[0][1]), 'humidity': float(data[0][2]), 'pressure': data[0][3]}}
+        return jsonify(ret)
 
 @app.route('/between', methods=['POST'])
 def get_between():
@@ -32,8 +37,6 @@ def get_between():
     dts = [dt.strftime('%Y-%m-%d %H:%M:%S') for dt in
        datetime_range(start, end, datetime.timedelta(minutes=1))]
     
-    print(dts)
-    
     with sqlite3.connect("data.db") as con:
         cur = con.cursor()
         ret = []
@@ -41,6 +44,7 @@ def get_between():
             stmt = f'''SELECT * FROM greenhouse WHERE date = '{dt}';'''
             cur.execute(stmt)
             ret.append(cur.fetchall())
+        ret = [{data[0][0] : {'temperature': float(data[0][1]), 'humidity': float(data[0][2]), 'pressure': data[0][3]}}  for data in ret if data]
         return jsonify(ret)
 
 def datetime_range(start, end, delta):

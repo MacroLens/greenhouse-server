@@ -22,8 +22,16 @@ con.commit()
 s = sched.scheduler(time.time, time.sleep)
 sense = SenseHat()
 
-def save_data(sc): 
-    date = datetime.datetime.now()
+
+
+def rounder(t):
+    if t.second >= 30:
+        return t.replace(second=0, microsecond=0, minute=t.minute+1)
+    else:
+        return t.replace(second=0, microsecond=0, minute=t.minute)
+
+def save_data(sc):
+    date = rounder(datetime.datetime.now())
 
     temp = round(sense.get_temperature(), 1)
     humidity = round(sense.get_humidity(), 1)
@@ -36,7 +44,7 @@ def save_data(sc):
     cur.execute(stmt)
     con.commit()
 
-    s.enter(5, 1, save_data, (sc,))
+    s.enter(60, 1, save_data, (sc,))
 
-s.enter(5, 1, save_data, (s,))
+s.enter(60, 1, save_data, (s,))
 s.run()

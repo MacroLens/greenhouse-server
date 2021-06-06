@@ -11,7 +11,7 @@ def combine_numbers(n1, n2):
     ret = [item for sublist in ret for item in sublist]
     return ret
 
-one = [
+numbers = [[
     b, w, b, b,
     w, w, b, b,
     b, w, b, b,
@@ -20,9 +20,9 @@ one = [
     b, w, b, b,
     b, w, b, b,
     w, w, w, b,
-]
+],
 
-two = [
+[
     b, w, w, b,
     w, b, b, w,
     b, b, b, w,
@@ -31,20 +31,20 @@ two = [
     w, b, b, b,
     w, b, b, b,
     w, w, w, w,  
-]
+],
 
-three = [
-    w, w, w, w,
-    b, b, w, b,
-    b, w, b, b,
-    w, w, w, b,
+[
+    b, w, w, w,
     b, b, b, w,
     b, b, b, w,
-    w, b, b, w,
-    b, w, w, b,
-]
+    b, w, w, w,
+    b, b, b, w,
+    b, b, b, w,
+    b, b, b, w,
+    b, w, w, w,
+],
 
-four = [
+[
     w, b, w, b,
     w, b, w, b,
     w, b, w, b,
@@ -53,9 +53,9 @@ four = [
     b, b, w, b,
     b, b, w, b,
     b, b, w, b,
-]
+],
 
-five = [
+[
     w, w, w, w,
     w, b, b, b,
     w, b, b, b,
@@ -64,9 +64,9 @@ five = [
     b, b, b, w,
     w, b, b, w,
     b, w, w, w,
-]
+],
 
-six = [
+[
     b, w, w, b,
     w, w, b, w,
     w, b, b, b,
@@ -75,9 +75,9 @@ six = [
     w, b, b, w,
     w, b, b, w,
     b, w, w, b,
-]
+],
 
-seven = [
+[
     w, w, w, w,
     b, b, b, w,
     b, b, w, b,
@@ -86,9 +86,9 @@ seven = [
     b, w, b, b,
     b, w, b, b,
     b, w, b, b,
-]
+],
 
-eight = [
+[
     b, w, w, b,
     w, b, b, w,
     w, b, b, w,
@@ -97,9 +97,9 @@ eight = [
     w, b, b, w,
     w, b, b, w,
     b, w, w, b,
-]
+],
 
-nine = [
+[
     b, w, w, b,
     w, b, b, w,
     w, b, b, w,
@@ -108,6 +108,6 @@ nine = [
     b, b, b, w,
     w, b, b, w,
     b, w, w, b,
-]
+]]
 
-print(len(combine_numbers(one, two)))
+print(len(combine_numbers(numbers[0], numbers[2])))

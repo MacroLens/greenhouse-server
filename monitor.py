@@ -4,6 +4,7 @@ Saves data to sqlite db.
 
 from sense_hat import SenseHat
 import numbers_image
+import inflect
 
 import sched, time, sqlite3, datetime
 con = sqlite3.connect('data.db')
@@ -22,6 +23,7 @@ con.commit()
 
 s = sched.scheduler(time.time, time.sleep)
 sense = SenseHat()
+inf = inflect.engine()
 
 def rounder(t):
     if t.second >= 30:
@@ -42,15 +44,11 @@ def save_data(sc):
     cur.execute(stmt)
     con.commit()
 
-    #
-    show_image(numbers_image.combine_numbers(numbers_image.one, numbers_image.three))
-    #
+    first = int(str(temp)[:1]) - 1
+    second = int(str(temp)[1:2]) - 1
+    sense.set_pixels(numbers_image.combine_numbers(numbers_image.numbers[first], numbers_image.numbers[second]))
 
     s.enter(2, 1, save_data, (sc,))
-
-def show_image(arr):
-    # Display these colours on the LED matrix
-    sense.set_pixels(arr)
 
 
 s.enter(2, 1, save_data, (s,))

@@ -6,8 +6,10 @@ from sense_hat import SenseHat
 import numbers_image
 # import inflect
 
+DATABASE = "/home/pi/greenhouse/data.db"
+
 import sched, time, sqlite3, datetime
-con = sqlite3.connect('data.db')
+con = sqlite3.connect(DATABASE)
 
 cur = con.cursor()
 

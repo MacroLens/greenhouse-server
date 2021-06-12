@@ -8,6 +8,7 @@ import pdb
 from gevent.pywsgi import WSGIServer
 
 
+DATABASE = "/home/pi/greenhouse/data.db"
 
 def rounder(t):
     """
@@ -21,7 +22,7 @@ def get_current():
     """
     Get the current temperature. This reads the latest entry from the DB
     """
-    with sqlite3.connect("data.db") as con:
+    with sqlite3.connect(DATABASE) as con:
         cur = con.cursor()
         stmt = f'''SELECT * FROM greenhouse ORDER BY timestamp DESC limit 1'''
         cur.execute(stmt)
@@ -46,7 +47,7 @@ def get_between():
     end_str = datetime.datetime.fromtimestamp(end)
     # print("Searching between " + str(start_str) + "->" + str(end_str))
 
-    with sqlite3.connect("data.db") as con:
+    with sqlite3.connect(DATABASE) as con:
         cur = con.cursor()
         ret = []
         stmt = f'''SELECT * FROM greenhouse WHERE timestamp >= {start} and timestamp <= {end};'''
@@ -87,7 +88,7 @@ def get_hilo():
     return jsonify(ret)
 
 def find_hilo(start, end):
-    with sqlite3.connect("data.db") as con:
+    with sqlite3.connect(DATABASE) as con:
         cur = con.cursor()
         stmt = f'''
             SELECT timestamp, MAX(temperature) FROM greenhouse

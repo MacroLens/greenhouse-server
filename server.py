@@ -22,6 +22,7 @@ def get_current():
     """
     Get the current temperature. This reads the latest entry from the DB
     """
+    print("Get current")
     with sqlite3.connect(DATABASE) as con:
         cur = con.cursor()
         stmt = f'''SELECT * FROM greenhouse ORDER BY timestamp DESC limit 1'''
@@ -39,6 +40,7 @@ def get_current():
 
 @app.route('/between')
 def get_between():
+    print("Get Between")
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
 

@@ -1,4 +1,4 @@
-source venv/bin/activate
-
-export FLASK_APP=server
-flask run --host=0.0.0.0
+#!/bin/bash
+cd /home/pi/greenhouse
+nohup python3 monitor.py > /dev/null &
+nohup python3 server.py > /dev/null &

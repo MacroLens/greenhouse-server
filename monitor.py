@@ -52,14 +52,20 @@ def save_data(sc):
     dt = datetime.datetime.fromtimestamp(timestamp)
     print(f'{dt} : {temp}c, {humidity}%, {pressure}mbar')
 
-    cur.execute(stmt)
-    con.commit()
+    max_attempts = 10
+    for _ in range(max_attempts):
+        try:
+            cur.execute(stmt)
+            con.commit()
+            break
+        except sqlite3.OperationalError as e:
+            print("Couldn't commit insert: ", e)
 
     temp = c2f(temp)
 
     first = int(str(temp)[:1]) - 1
     second = int(str(temp)[1:2]) - 1
-    sense.set_pixels(numbers_image.combine_numbers(numbers_image.numbers[first], numbers_image.numbers[second]))
+    # sense.set_pixels(numbers_image.combine_numbers(numbers_image.numbers[first], numbers_image.numbers[second]))
 
     s.enter(60, 1, save_data, (sc,))
 

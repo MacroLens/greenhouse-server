@@ -9,6 +9,7 @@ from firebase_admin import firestore
 import numpy as np
 import numbers_image
 import sched, time
+from datetime import datetime, timedelta
 
 # Use a service account. 
 cred = credentials.Certificate('cert.json')
@@ -59,6 +60,7 @@ def save_data(sc):
             "humidity": humidity,
             "pressure": pressure,
             "temperature": calibrated_temp,
+            "ttl": datetime.now() + timedelta(days=365*3)
             }
     update_time, sensor_read_ref = db.collection("sensor-data").add(sensor_read)
     print(f"Added document with id {sensor_read_ref.id}")

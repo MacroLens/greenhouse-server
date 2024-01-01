@@ -19,3 +19,7 @@ to authenticate and modify the database in firestore.
 "actions" column > "manage keys"
 4. Click "Add Key" > "Create new key" > JSON > CREATE
 5. Download the key to the Pi as `cert.json`. **Do not commit this private key to VCS**
+
+## Setup TTL for Database
+After installing [gcloud](https://cloud.google.com/sdk/docs/install#deb) to your Pi, you
+need to now setup a time to live policy on firestore. 

@@ -1,28 +1,19 @@
 """
-Saves data to sqlite db.
+Saves data to Firebase firestore database.
 """
 
 from sense_hat import SenseHat
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore 
 import numpy as np
 import numbers_image
-# import inflect
+import sched, time
 
-DATABASE = "/home/pi/greenhouse/data.db"
-
-import sched, time, sqlite3, datetime
-con = sqlite3.connect(DATABASE)
-
-cur = con.cursor()
-
-
-# Create table
-# the greenhouse table
-try:
-    cur.execute('''CREATE TABLE IF NOT EXISTS greenhouse
-                   (timestamp bigint, temperature real, humidity real, pressure real)''')
-except sqlite3.OperationalError:
-    print("Database already created")
-con.commit()
+# Use a service account. 
+cred = credentials.Certificate('cert.json')
+app = firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 def get_poly_cal(filename: str, max_degree: int=2) -> np.ndarray :
     """
@@ -44,12 +35,6 @@ polynomial = get_poly_cal("cal.csv")
 
 # inf = inflect.engine()
 
-def rounder(t):
-    """
-    Round down to the floor minute
-    """
-    return t.replace(second=0, microsecond=0, minute=t.minute)
-
 def c2f(c):
     """
     Convert celsius to fahrenheit
@@ -57,8 +42,6 @@ def c2f(c):
     return 9/5 * c + 32
 
 def save_data(sc):
-    timestamp = rounder(datetime.datetime.now()).timestamp()
-
     # Read 1000 temps over 5 seconds to get the avg reading
     interval = 5 / 1000 # inteval between reads
     temps = []
@@ -71,27 +54,16 @@ def save_data(sc):
     humidity = round(sense.get_humidity(), 1)
     pressure = int(sense.get_pressure())
 
-    stmt = f'''INSERT INTO greenhouse VALUES ({timestamp}, {calibrated_temp}, {humidity}, {pressure} );'''
+    sensor_read = {
+            "timestamp": firestore.SERVER_TIMESTAMP,
+            "humidity": humidity,
+            "pressure": pressure,
+            "temperature": calibrated_temp,
+            }
+    update_time, sensor_read_ref = db.collection("sensor-data").add(sensor_read)
+    print(f"Added document with id {sensor_read_ref.id}")
 
-    dt = datetime.datetime.fromtimestamp(timestamp)
-    print(f'{dt} : {temp}c, {humidity}%, {pressure}mbar')
-
-    max_attempts = 10
-    for _ in range(max_attempts):
-        try:
-            cur.execute(stmt)
-            con.commit()
-            break
-        except sqlite3.OperationalError as e:
-            print("Couldn't commit insert: ", e)
-
-    temp = c2f(temp)
-
-    first = int(str(temp)[:1]) - 1
-    second = int(str(temp)[1:2]) - 1
-    # sense.set_pixels(numbers_image.combine_numbers(numbers_image.numbers[first], numbers_image.numbers[second]))
-
-    s.enter(60, 1, save_data, (sc,))
+    sc.enter(60, 1, save_data, (sc,))
 
 
 s.enter(1, 1, save_data, (s,))

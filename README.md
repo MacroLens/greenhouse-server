@@ -45,7 +45,7 @@ terraform apply
 
 Extract the certificate from the state
 ```
-terraform output -json service-certificate > cert.json
+terraform output -raw service-certificate > cert.json
 ```
 
 Extract the json for android studio from the state and follow this [guide](https://firebase.google.com/docs/android/setup#add-config-file). Or just add it to the root module folder your app,

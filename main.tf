@@ -154,7 +154,7 @@ resource "random_string" "project-suffix" {
 }
 
 output "service-certificate" {
-  value     = google_service_account_key.serviceKey
+  value     = base64decode(google_service_account_key.serviceKey.private_key)
   sensitive = true
 }
 

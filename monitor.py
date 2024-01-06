@@ -60,7 +60,7 @@ def save_data(sc):
             "humidity": humidity,
             "pressure": pressure,
             "temperature": calibrated_temp,
-            "ttl": datetime.now() + timedelta(days=365*3)
+            "ttl": datetime.now() + timedelta(days=365*10)
             }
     update_time, sensor_read_ref = db.collection("sensor-data").add(sensor_read)
     print(f"Added document with id {sensor_read_ref.id}")

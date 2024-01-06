@@ -8,6 +8,7 @@ sudo apt install sense-hat git
 pip install firebase_admin numpy
 ```
 
+
 ## Google Cloud Billing
 Enable billing for google cloud, you won't likely be charged for anything, this
 is to make Time to Live setup on the firestore database. See this [resource](https://cloud.google.com/billing/docs/how-to/create-billing-account).
@@ -36,6 +37,15 @@ Extract the json for android studio from the state and follow this [guide](https
 and [use the assistant in Android Studio](https://firebase.google.com/docs/android/setup#assistant).
 ```
 terraform output -raw google-services > google-services.json
+```
+
+## Installation on the Pi
+Clone this repo to the user `pi`'s home directory as `greenhouse-server`.
+Take the cert.json and move it to the same directory.
+Move `greenhouse-server.service` to `/etc/systemd/system/`
+Finally start the data collection server
+```
+systemctl enable --now greenhouse-server.service
 ```
 
 ## Backups

@@ -38,6 +38,12 @@ and [use the assistant in Android Studio](https://firebase.google.com/docs/andro
 terraform output -raw google-services > google-services.json
 ```
 
+## Backups
+You only really need to backup `terraform.tfstate` locally. This is so you can
+tear down the project. Keep this file safe.
+
+## Clean Up
+
 To clean up
 ```
 terraform destroy

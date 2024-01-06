@@ -47,6 +47,10 @@ resource "google_project_service" "default" {
   project  = google_project.default.project_id
   for_each = toset([
     "cloudbilling.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "eventarc.googleapis.com",
+    "run.googleapis.com",
     # "cloudresourcemanager.googleapis.com",
     "firebase.googleapis.com",
     "firestore.googleapis.com",
@@ -143,6 +147,168 @@ resource "google_firestore_field" "timestamp" {
   index_config {}
   depends_on = [ 
     google_firestore_database.database,
+  ]
+}
+
+# Create a TTL policy on collection
+resource "google_firestore_field" "dates_timestamp" {
+  provider = google-beta
+
+  project = google_project.default.project_id
+  collection = "dates"
+  field = "ttl"
+
+  # enables a TTL policy for the document based on the value of entries with this field
+  ttl_config {}
+
+  # Disable all single field indexes for the timestamp property.
+  index_config {}
+  depends_on = [ 
+    google_firestore_database.database,
+  ]
+}
+
+
+resource "google_firebaserules_release" "primary" {
+  provider = google-beta
+  name         = "cloud.firestore"
+  ruleset_name = google_firebaserules_ruleset.firestore.name
+  project = google_firebase_project.default.project
+
+  
+  lifecycle {
+    replace_triggered_by = [
+      google_firebaserules_ruleset.firestore
+    ]
+  }
+}
+
+resource "google_firebaserules_ruleset" "firestore" {
+  provider = google-beta
+  project = google_firebase_project.default.project
+  source {
+    files {
+      content = <<-EOT
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sensor-data/{data_entry} {
+      allow read
+      allow write: if false;
+
+    }
+    match /sensor-aggregate/{aggregate=**} {
+      allow read
+      allow write: if false;
+    }
+  }
+}
+EOT
+      name    = "firestore.rules"
+    }
+  }
+}
+
+data "google_service_account" "firebase-admin" {
+  project = google_project.default.project_id
+  account_id = data.external.firebase_service_account.result.email
+}
+
+resource "google_project_iam_binding" "admin-account-iam" {
+  project = google_project.default.project_id
+  role               = "roles/eventarc.eventReceiver"
+  members = [
+    data.google_service_account.firebase-admin.member
+  ]
+}
+resource "google_project_iam_binding" "admin-account-log" {
+  project = google_project.default.project_id
+  role               = "roles/logging.logWriter"
+  members = [
+    data.google_service_account.firebase-admin.member
+  ]
+}
+resource "google_project_iam_binding" "admin-account-invoker" {
+  project = google_project.default.project_id
+  role               = "roles/run.invoker"
+  members = [
+    data.google_service_account.firebase-admin.member
+  ]
+}
+
+
+resource "google_storage_bucket" "bucket" {
+  project = google_project.default.project_id
+
+  name     = "code-bucket-${random_string.project-suffix.result}"
+  location = "us-west1"
+
+  force_destroy = true
+}
+
+resource "google_storage_bucket_object" "archive" {
+  name   = "index_${lower(replace(base64encode(data.archive_file.archive_aggregate_code.output_md5), "=", ""))}.zip"
+  bucket = google_storage_bucket.bucket.name
+  source = data.archive_file.archive_aggregate_code.output_path
+
+  depends_on = [ 
+    data.archive_file.archive_aggregate_code,
+    google_storage_bucket.bucket
+  ]
+}
+
+data "archive_file" "archive_aggregate_code" {
+  type        = "zip"
+  source_dir  = "cloud-function"
+  output_path = "artifacts/index.zip"
+}
+
+resource "google_cloudfunctions2_function" "aggregator-function" {
+  project = google_project.default.project_id
+  location = "us-west1"
+
+  name = "aggregator-${random_string.project-suffix.result}"
+
+  description = "Aggregator of stats per day."
+  build_config {
+    runtime = "python311"
+    entry_point = "myfunction"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.bucket.name
+        object = google_storage_bucket_object.archive.name
+      }
+    }
+  }
+  service_config {
+    max_instance_count  = 1
+    available_memory    = "128Mi"
+    service_account_email = data.external.firebase_service_account.result.email
+    environment_variables = {
+      # All timezones the backend will support as UTC offsets.
+      TIMEZONES = "[-12, -11, -10, -9, -8, -7, -6, -5, -4, 10, 12]"
+    }
+  }
+  event_trigger {
+    event_type = "google.cloud.firestore.document.v1.created"
+    trigger_region = google_firestore_database.database.location_id
+    # resource = google_firestore_database.database.id
+    service_account_email = data.external.firebase_service_account.result.email
+    event_filters {
+      attribute = "database"
+      value = "(default)"
+    }
+    event_filters {
+      attribute = "document"
+      value = "sensor-data/{dataentry}"
+      operator = "match-path-pattern"
+    }
+  }
+
+  depends_on = [ 
+    google_storage_bucket_object.archive,
+    google_project_iam_binding.admin-account-iam,
+    google_project_iam_binding.admin-account-log,
+    google_project_iam_binding.admin-account-invoker,
   ]
 }
 

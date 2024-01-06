@@ -2,27 +2,11 @@
 Uploads data to Firebase for use with the greenhouse-monitor app.
 
 ## Requirements:
-sense_hat
-numpy
-google-cloud-firestore
-firebase_admin
-grpcio-status==1.59.0
-grpcio==1.59.0
-
-## Cloud certificates
-After setting up the firebase app you will need a certificate
-to authenticate and modify the database in firestore.
-
-1. Go to your [GCC service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts).
-2. Select your firebase project.
-3. Under "Service accounts for project (PROJECT NAME)" click on the three dots under the
-"actions" column > "manage keys"
-4. Click "Add Key" > "Create new key" > JSON > CREATE
-5. Download the key to the Pi as `cert.json`. **Do not commit this private key to VCS**
-
-## Setup TTL for Database
-After installing [gcloud](https://cloud.google.com/sdk/docs/install#deb) to your Pi, you
-need to now setup a time to live policy on firestore. 
+On the Pi running Bullseye
+```
+sudo apt install sense-hat git
+pip install firebase_admin numpy
+```
 
 ## Google Cloud Billing
 Enable billing for google cloud, you won't likely be charged for anything, this

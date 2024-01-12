@@ -1,0 +1,12 @@
+[Unit]
+Description=Greenhouse temperature monitor
+After=network.target
+
+[Service]
+Restart=on-failure
+WorkingDirectory=/home/pi/greenhouse-server/
+ExecStart=/usr/bin/python /home/pi/greenhouse-server/monitor.py
+User=pi
+
+[Install]
+WantedBy=multi-user.target

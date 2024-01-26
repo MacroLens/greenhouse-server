@@ -1,6 +1,9 @@
 # Greenhouse Monitor Server
 Uploads data to Firebase for use with the greenhouse-monitor app.
 
+## Architecture Diagram
+![Google Cloud Platform Architecture](https://github.com/MacroLens/greenhouse-server/blob/63e7f77af7cfcfdc4c3d408ab44b41c8d475eb3a/architecture-gcp/architecture.png)
+
 ## Requirements:
 On the Pi running Bullseye
 ```
